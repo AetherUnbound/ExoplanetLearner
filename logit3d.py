@@ -3,6 +3,7 @@ import math
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import axes3d, Axes3D
 from matplotlib import cm
 
 
@@ -12,8 +13,8 @@ execfile("../Login/login.py")
 
 #Parameter vector
 #theta = [1, 2, -0.025]
-theta = [600, 0, 0]
-#theta = [0, 0, 0]
+theta = [6, 0, 0, 0]
+c = []
 x = []
 y = []
 z = []
@@ -26,11 +27,16 @@ def prep(rows):
     for i in range(0, len(rows)):
         rows[i] = list(rows[i])
         rows[i].insert(0, 1)
+        #adds each data value to an array for graphing later
         x.append(rows[i][1])
         y.append(rows[i][2])
         z.append(rows[i][3])
+        c.append(rows[i][4])
+        #divide temperature values by a suitable number
+        #in order for the algorithm to converge
         rows[i][2] /= 100
-        #no idea if this will change anything
+        rows[i][3] /= 10
+
     return rows
 
 #Hypothesis function
@@ -103,54 +109,54 @@ def delJ(rows, param):
 #   Update each theta value
 def newTheta(rows, learnRate, numParams):
     global theta
-    tmpTheta = [0, 0, 0]
+    tmpTheta = [0, 0, 0, 0]
     for i in range (0, numParams):
         tmpTheta[i] = theta[i] - (learnRate * delJ(rows, i))
     theta = tmpTheta
 
 #Decision Boundary
 #   Determines the linear equation for the decision boundary
+#   For a plane, this involves the following equation:
+#   ax + by + cz + d = 0
+#   But here, that equation will be:
+#   z = d + ax + by (c will be inherent in those values)
 def decBound():
     global theta
-    m = -((100 * theta[1])/theta[2])
-    b = -((100 * theta[0])/theta[2])
-    #m = -((theta[1])/theta[2])
-    #b = -((theta[0])/theta[2])
-    print("y = {}x + {}".format(m, b))
-    line = [m, b]
-    return line
+    d = -10 * (theta[0]/theta[3])
+    a = -10 * (theta[1]/theta[3])
+    b = -theta[2] / (10 * theta[3])
+    print("z = {} + {}x + {}y".format(d, a, b))
+    plane = [d,a, b]
+    return plane
 
 #Graphing function
 #   Graphs the data points and calculated decision boundary
 def graph(bounds):
-    global x, y
     fig = plt.figure(figsize=(8,8))
-    ax = fig.add_subplot(111)
-    #ax = fig.gca(projection = '3d')
+    ax = Axes3D(fig)
+    #Plot options
     plt.hold(True)
-    ax.set_title("Mag vs TEff",fontsize=14)
+    ax.set_title("Mag vs TEff vs Distance",fontsize=14)
     ax.set_xlabel("Mag",fontsize=12)
     ax.set_ylabel("TEff",fontsize=12)
+    ax.set_zlabel("Distance",fontsize=12)
+    ax.set_ylim(3000,7000)
     ax.grid(True,linestyle='-',color='0.75')
-    #x1 = np.random.random(30)
-    #y1 = np.random.random(30)
-    #z = np.random.random(30)
+    #Setting scatter plot variables up
     xvar = np.asarray(x)
     yvar = np.asarray(y)
     zvar = np.asarray(z)
-    #print(xvar)
+    cvar = np.asarray(c)
+    #Plane set up
+    xx, yy = np.meshgrid(np.arange(0,20,1), np.arange(3000,7000,100))
     for i in range(0, len(bounds)):
-        line = bounds[i]
-        lx = [5, 20]
-        ll = []
-        for index, item in enumerate(lx):
-            ll.append(line[0]*item + line[1])
-        ax.plot(lx,ll, 'k-')
-    # scatter with colormap mapping to z value
-    #ax.scatter(x1,y1,s=20,c=z, marker = 'o', cmap = cm.jet );
+        plane = bounds[i]
+        #z = d + ax + by
+        zz = plane[0] + plane[1]*xx + plane[2]*yy
+        ax.plot_surface(xx,yy,zz, color='black', alpha=0.05)
 
-    # scatter with colormap mapping to z value
-    ax.scatter(xvar,yvar, 20, zvar, 'o', cmap = cm.jet)
+    # scatter 3D with colormap
+    ax.scatter(xvar, yvar, zvar, c=cvar, marker='o', cmap=cm.jet) #20, zvar, 'o', cmap = cm.jet)
 
     plt.show()
 
@@ -159,8 +165,8 @@ cnx = mysql.connector.connect(**config)
 cursor = cnx.cursor()
 
 
-query = ("SELECT kpmag, teff, classif FROM trainingset2d") # WHERE testID IN ('1', '2', '3', '200', '201')")
-#query = ("SELECT dist, kpmag, teff, classif FROM minitest WHERE testID IN ('1', '2', '3', '40', '41')")
+#query = ("SELECT kpmag, teff, dist, classif FROM minitest") # WHERE testID IN ('1', '2', '3', '200', '201')")
+query = ("SELECT kpmag, teff, dist, classif FROM minitest WHERE testID IN ('1', '2', '3', '40', '41')")
 cursor.execute(query)
 rows = cursor.fetchall()
 rows = prep(rows)
@@ -169,15 +175,15 @@ print(rows)
 #print(rows[1][2])
 print("Hypothesis value for row 1: {}".format(h(rows[1])))
 #print("Total cost value: {}".format(J(rows)))
-for i in range (0, 500):
-    #print("Current Theta: {}".format(theta))
+for i in range (0, 100):
+    print("Current Theta: {}".format(theta))
     cost = J(rows)
-    #print("Current cost:  {} -- {} ".format(i, cost))
+    print("Current cost:  {} -- {} ".format(i, cost))
     #print("{},{}".format(i, cost))
-    newTheta(rows, 0.01, 3) #for 600,0,0 theta
+    newTheta(rows, 0.01, 4) #for 600,0,0 theta
     #newTheta(rows, 0.0021, 3) #for 0-> theta
     #newTheta(rows, 0.001, 4)
-    if(i > 0):
+    if((i % 10) == 1):
         bounds.append(decBound())
     if(cost == 0):
         break
