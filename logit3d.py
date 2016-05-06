@@ -6,40 +6,41 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 from matplotlib import cm
 
-
-#Variable declaration space
-#External login reference
+# Variable declaration space
+# External login reference
 execfile("../Login/login.py")
 
-#Parameter vector
-#theta = [1, 2, -0.025]
+# Parameter vector
+# theta = [1, 2, -0.025]
 theta = [6, 0, 0, 0]
 c = []
 x = []
 y = []
 z = []
 
+
 ##Function declaration##
 
-#Preparation function
+# Preparation function
 #   Adds 1 to x_0 value for intercept calculations
 def prep(rows):
     for i in range(0, len(rows)):
         rows[i] = list(rows[i])
         rows[i].insert(0, 1)
-        #adds each data value to an array for graphing later
+        # adds each data value to an array for graphing later
         x.append(rows[i][1])
         y.append(rows[i][2])
         z.append(rows[i][3])
         c.append(rows[i][4])
-        #divide temperature values by a suitable number
-        #in order for the algorithm to converge
+        # divide temperature values by a suitable number
+        # in order for the algorithm to converge
         rows[i][2] /= 100
         rows[i][3] /= 10
 
     return rows
 
-#Hypothesis function
+
+# Hypothesis function
 #   Takes a specific instance and calculates
 #   the 'hypothesis value' for it
 #   Range: -inf < x < inf
@@ -47,28 +48,30 @@ def h(x):
     global theta
     hyp = 0
     for index, item in enumerate(x):
-        #sum of parameter vector times actual value
-        if(index < len(x) - 1): #don't want to include classification
+        # sum of parameter vector times actual value
+        if (index < len(x) - 1):  # don't want to include classification
             dumb = theta[index]
             hyp += (dumb * item)
     hyp = logit(hyp)
     return (hyp)
 
-#Logit Function
+
+# Logit Function
 #   This function gives a probability value based off
 #   of the calculated 'hypothesis value'.
 #   Range: 0 < x < 1
 def logit(val):
-    if (val > 709): #more than exp can handle
+    if (val > 709):  # more than exp can handle
         return 0.999999999999
-    elif (val < -709): #opposite end
+    elif (val < -709):  # opposite end
         return sys.float_info.min
     else:
-        toreturn = 1/(1+math.exp(-val))
+        toreturn = 1 / (1 + math.exp(-val))
         return 0.999999999999 if toreturn == 1 else toreturn
-    #### NEED THIS TO BE JUST LESS THAN ONE
+        #### NEED THIS TO BE JUST LESS THAN ONE
 
-#Cost Function
+
+# Cost Function
 #   Determines a cost for the current values of theta
 #   Range: 0 < x < inf
 def J(rows):
@@ -76,23 +79,24 @@ def J(rows):
     length = len(rows)
     for i in range(0, length):
         x = h(rows[i])
-        y = rows[i][len(rows[i])-1] #after inserting x0=1
+        y = rows[i][len(rows[i]) - 1]  # after inserting x0=1
         try:
-            if (y == 1): #essentially y(i) * log(h(x(i)))
+            if (y == 1):  # essentially y(i) * log(h(x(i)))
                 sum += math.log(x)
-            else: #(1-y(i)) * log(1-h(x(i)))
-                sum += math.log(1-x)
-        except ValueError: #incase it throws a -inf error
-            print("ERROR ROWS: {} \t ERROR THETA: {}".format(rows[i],theta))
+            else:  # (1-y(i)) * log(1-h(x(i)))
+                sum += math.log(1 - x)
+        except ValueError:  # incase it throws a -inf error
+            print("ERROR ROWS: {} \t ERROR THETA: {}".format(rows[i], theta))
             h(rows[i])
             break
-    #needs to be two separate operations in order to
-    #return a valid number
+    # needs to be two separate operations in order to
+    # return a valid number
     sum = sum * -1
-    sum = sum/length
+    sum = sum / length
     return sum
 
-#Derivative of Cost Function
+
+# Derivative of Cost Function
 #   Determines the derivative for the cost function
 #   This is used in the gradient descent tuning
 def delJ(rows, param):
@@ -100,21 +104,23 @@ def delJ(rows, param):
     length = len(rows)
     for i in range(0, length):
         x = rows[i]
-        y = rows[i][len(x)-1] #after inserting x0=1
+        y = rows[i][len(x) - 1]  # after inserting x0=1
         sum += (h(x) - y) * x[param]
-    sum = float(sum)/length
+    sum = float(sum) / length
     return sum
 
-#Theta Iteration
+
+# Theta Iteration
 #   Update each theta value
 def newTheta(rows, learnRate, numParams):
     global theta
     tmpTheta = [0, 0, 0, 0]
-    for i in range (0, numParams):
+    for i in range(0, numParams):
         tmpTheta[i] = theta[i] - (learnRate * delJ(rows, i))
     theta = tmpTheta
 
-#Decision Boundary
+
+# Decision Boundary
 #   Determines the linear equation for the decision boundary
 #   For a plane, this involves the following equation:
 #   ax + by + cz + d = 0
@@ -122,74 +128,83 @@ def newTheta(rows, learnRate, numParams):
 #   z = d + ax + by (c will be inherent in those values)
 def decBound():
     global theta
-    d = -10 * (theta[0]/theta[3])
-    a = -10 * (theta[1]/theta[3])
+    d = -10 * (theta[0] / theta[3])
+    a = -10 * (theta[1] / theta[3])
     b = -theta[2] / (10 * theta[3])
     print("z = {} + {}x + {}y".format(d, a, b))
-    plane = [d,a, b]
+    plane = [d, a, b]
     return plane
 
-#Graphing function
+
+# Graphing function
 #   Graphs the data points and calculated decision boundary
 def graph(bounds):
-    fig = plt.figure(figsize=(8,8))
+    fig = plt.figure(figsize=(8, 8))
     ax = Axes3D(fig)
-    #Plot options
+    # Plot options
     plt.hold(True)
-    ax.set_title("Mag vs TEff vs Distance",fontsize=14)
-    ax.set_xlabel("Mag",fontsize=12)
-    ax.set_ylabel("TEff",fontsize=12)
-    ax.set_zlabel("Distance",fontsize=12)
-    ax.set_ylim(3000,7000)
-    ax.grid(True,linestyle='-',color='0.75')
-    #Setting scatter plot variables up
+    ax.set_title("Mag vs TEff vs Distance", fontsize=14)
+    ax.set_xlabel("Mag", fontsize=12)
+    ax.set_ylabel("TEff", fontsize=12)
+    ax.set_zlabel("Distance", fontsize=12)
+    ax.set_ylim(3000, 25000)
+    ax.set_zlim(-1000,1000)
+    ax.grid(True, linestyle='-', color='0.75')
+    # Setting scatter plot variables up
     xvar = np.asarray(x)
     yvar = np.asarray(y)
     zvar = np.asarray(z)
     cvar = np.asarray(c)
-    #Plane set up
-    xx, yy = np.meshgrid(np.arange(0,20,1), np.arange(3000,7000,100))
+    # Plane set up
+    xx, yy = np.meshgrid(np.arange(0, 20, 1), np.arange(3000, 25000, 100))
     for i in range(0, len(bounds)):
         plane = bounds[i]
-        #z = d + ax + by
-        zz = plane[0] + plane[1]*xx + plane[2]*yy
-        ax.plot_surface(xx,yy,zz, color='black', alpha=0.05)
+        # z = d + ax + by
+        zz = plane[0] + plane[1] * xx + plane[2] * yy
+        #zz[zz>1000] = np.nan
+        #zz[zz<-1000] = np.nan
+        #for i in range(len(xx)):
+        #    for j in range(len(yy)):
+        #        if (zz[j, i] < -1000) or (zz[j, i] > 1000):
+        #            zz[j, i] = float('nan')
+
+        ax.plot_surface(xx, yy, zz, color='black', alpha=0.05)
 
     # scatter 3D with colormap
-    ax.scatter(xvar, yvar, zvar, c=cvar, marker='o', cmap=cm.jet) #20, zvar, 'o', cmap = cm.jet)
+    ax.scatter(xvar, yvar, zvar, c=cvar, marker='o', cmap=cm.jet)  # 20, zvar, 'o', cmap = cm.jet)
 
     plt.show()
 
-#SQL queries and modifications
+
+# SQL queries and modifications
 cnx = mysql.connector.connect(**config)
 cursor = cnx.cursor()
 
-
-#query = ("SELECT kpmag, teff, dist, classif FROM minitest") # WHERE testID IN ('1', '2', '3', '200', '201')")
-query = ("SELECT kpmag, teff, dist, classif FROM minitest WHERE testID IN ('1', '2', '3', '40', '41')")
+query = ("SELECT kpmag, teff, dist, classif FROM minitest") # WHERE testID IN ('1', '2', '3', '200', '201')")
+#query = ("SELECT kpmag, teff, dist, classif FROM minitest WHERE testID IN ('1', '2', '3', '40', '41')")
 cursor.execute(query)
 rows = cursor.fetchall()
 rows = prep(rows)
 bounds = []
 print(rows)
-#print(rows[1][2])
+# print(rows[1][2])
 print("Hypothesis value for row 1: {}".format(h(rows[1])))
-#print("Total cost value: {}".format(J(rows)))
-for i in range (0, 100):
+# print("Total cost value: {}".format(J(rows)))
+for i in range(0, 1000):
     print("Current Theta: {}".format(theta))
     cost = J(rows)
     print("Current cost:  {} -- {} ".format(i, cost))
-    #print("{},{}".format(i, cost))
-    newTheta(rows, 0.01, 4) #for 600,0,0 theta
-    #newTheta(rows, 0.0021, 3) #for 0-> theta
-    #newTheta(rows, 0.001, 4)
-    if((i % 10) == 1):
+    # print("{},{}".format(i, cost))
+    newTheta(rows, 0.01, 4)  # for 600,0,0 theta
+    # newTheta(rows, 0.0021, 3) #for 0-> theta
+    # newTheta(rows, 0.001, 4)
+    if ((i % 50) == 1 and (i > 100)):
         bounds.append(decBound())
-    if(cost == 0):
+    if (cost == 0):
         break
 print("Final theta {}".format(theta))
 graph(bounds)
-#for (no, dist, mag, teff, classif) in rows:
+# for (no, dist, mag, teff, classif) in rows:
 #    print("Distance: {}  \t Magnitude: {}  \t TEff: {} \t Class: {} ".format(dist, mag, teff, classif))
 
 
