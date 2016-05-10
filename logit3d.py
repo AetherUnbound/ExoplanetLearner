@@ -12,7 +12,7 @@ execfile("../Login/login.py")
 
 # Parameter vector
 # theta = [1, 2, -0.025]
-theta = [6, 0, 0, 0]
+theta = [6, 1, 1, 1]
 c = []
 x = []
 y = []
@@ -156,13 +156,13 @@ def graph(bounds):
     zvar = np.asarray(z)
     cvar = np.asarray(c)
     # Plane set up
-    xx, yy = np.meshgrid(np.arange(0, 20, 1), np.arange(3000, 25000, 100))
+    xx, yy = np.meshgrid(np.arange(0, 20, 1), np.arange(3000, 25000, 25))
     for i in range(0, len(bounds)):
         plane = bounds[i]
         # z = d + ax + by
         zz = plane[0] + plane[1] * xx + plane[2] * yy
-        #zz[zz>1000] = np.nan
-        #zz[zz<-1000] = np.nan
+        #zz[zz > 1000] = np.nan
+        #zz[zz < -1000] = np.nan
         #for i in range(len(xx)):
         #    for j in range(len(yy)):
         #        if (zz[j, i] < -1000) or (zz[j, i] > 1000):
@@ -180,7 +180,7 @@ def graph(bounds):
 cnx = mysql.connector.connect(**config)
 cursor = cnx.cursor()
 
-query = ("SELECT kpmag, teff, dist, classif FROM minitest") # WHERE testID IN ('1', '2', '3', '200', '201')")
+query = ("SELECT kpmag, teff, dist, classif FROM testingdata") # WHERE testID IN ('1', '2', '3', '200', '201')")
 #query = ("SELECT kpmag, teff, dist, classif FROM minitest WHERE testID IN ('1', '2', '3', '40', '41')")
 cursor.execute(query)
 rows = cursor.fetchall()
@@ -198,7 +198,7 @@ for i in range(0, 1000):
     newTheta(rows, 0.01, 4)  # for 600,0,0 theta
     # newTheta(rows, 0.0021, 3) #for 0-> theta
     # newTheta(rows, 0.001, 4)
-    if ((i % 50) == 1 and (i > 100)):
+    if ((i % 10) == 1 and (i > 900)):
         bounds.append(decBound())
     if (cost == 0):
         break
