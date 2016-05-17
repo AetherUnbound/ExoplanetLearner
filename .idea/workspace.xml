@@ -44,8 +44,8 @@
       <file leaf-file-name="logit3d.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/logit3d.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="136">
-              <caret line="158" column="36" selection-start-line="0" selection-start-column="0" selection-end-line="212" selection-end-column="0" />
+            <state relative-caret-position="221">
+              <caret line="163" column="31" selection-start-line="163" selection-start-column="31" selection-end-line="163" selection-end-column="31" />
               <folding>
                 <element signature="e#0#22#0" expanded="true" />
               </folding>
@@ -56,8 +56,20 @@
       <file leaf-file-name="logit3d-plane.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/logit3d-plane.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="136">
-              <caret line="200" column="14" selection-start-line="200" selection-start-column="14" selection-end-line="200" selection-end-column="14" />
+            <state relative-caret-position="254">
+              <caret line="211" column="35" selection-start-line="211" selection-start-column="35" selection-end-line="211" selection-end-column="35" />
+              <folding>
+                <element signature="e#0#22#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="validator.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/validator.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="255">
+              <caret line="21" column="12" selection-start-line="21" selection-start-column="12" selection-end-line="21" selection-end-column="12" />
               <folding>
                 <element signature="e#0#22#0" expanded="true" />
               </folding>
@@ -86,6 +98,7 @@
         <option value="$PROJECT_DIR$/../Login/Login.py" />
         <option value="$PROJECT_DIR$/logit3d.py" />
         <option value="$PROJECT_DIR$/logit3d-plane.py" />
+        <option value="$PROJECT_DIR$/validator.py" />
       </list>
     </option>
   </component>
@@ -120,6 +133,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -140,7 +154,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="Scratches" />
     </panes>
   </component>
@@ -149,7 +162,7 @@
     <property name="settings.editor.splitter.proportion" value="0.2" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
-  <component name="RunManager" selected="Python.logit3d-plane">
+  <component name="RunManager" selected="Python.validator">
     <configuration default="false" name="connectiontest" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -214,6 +227,23 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="ExoplanetScripts" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/logit3d-plane.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <configuration default="false" name="validator" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="ExoplanetScripts" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/validator.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
@@ -352,18 +382,20 @@
       <option name="USE_KEYWORD" value="false" />
       <method />
     </configuration>
-    <list size="4">
+    <list size="5">
       <item index="0" class="java.lang.String" itemvalue="Python.connectiontest" />
       <item index="1" class="java.lang.String" itemvalue="Python.logit" />
       <item index="2" class="java.lang.String" itemvalue="Python.logit3d" />
       <item index="3" class="java.lang.String" itemvalue="Python.logit3d-plane" />
+      <item index="4" class="java.lang.String" itemvalue="Python.validator" />
     </list>
     <recent_temporary>
-      <list size="4">
-        <item index="0" class="java.lang.String" itemvalue="Python.logit3d-plane" />
-        <item index="1" class="java.lang.String" itemvalue="Python.logit3d" />
-        <item index="2" class="java.lang.String" itemvalue="Python.logit" />
-        <item index="3" class="java.lang.String" itemvalue="Python.connectiontest" />
+      <list size="5">
+        <item index="0" class="java.lang.String" itemvalue="Python.validator" />
+        <item index="1" class="java.lang.String" itemvalue="Python.logit3d-plane" />
+        <item index="2" class="java.lang.String" itemvalue="Python.logit3d" />
+        <item index="3" class="java.lang.String" itemvalue="Python.logit" />
+        <item index="4" class="java.lang.String" itemvalue="Python.connectiontest" />
       </list>
     </recent_temporary>
   </component>
@@ -465,6 +497,42 @@
     </watches-manager>
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/connectiontest.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="323">
+          <caret line="19" column="1" selection-start-line="19" selection-start-column="1" selection-end-line="19" selection-end-column="1" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/logit.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="8" selection-start-line="0" selection-start-column="8" selection-end-line="0" selection-end-column="8" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/logit3d.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2686">
+          <caret line="158" column="36" selection-start-line="0" selection-start-column="0" selection-end-line="212" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#22#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/logit3d-plane.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3298">
+          <caret line="200" column="14" selection-start-line="200" selection-start-column="14" selection-end-line="200" selection-end-column="14" />
+          <folding>
+            <element signature="e#0#22#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/connectiontest.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="323">
@@ -758,8 +826,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/logit3d.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="158" column="36" selection-start-line="0" selection-start-column="0" selection-end-line="212" selection-end-column="0" />
+        <state relative-caret-position="221">
+          <caret line="163" column="31" selection-start-line="163" selection-start-column="31" selection-end-line="163" selection-end-column="31" />
+          <folding>
+            <element signature="e#0#22#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/validator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="21" column="12" selection-start-line="21" selection-start-column="12" selection-end-line="21" selection-end-column="12" />
           <folding>
             <element signature="e#0#22#0" expanded="true" />
           </folding>
@@ -768,8 +846,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/logit3d-plane.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="200" column="14" selection-start-line="200" selection-start-column="14" selection-end-line="200" selection-end-column="14" />
+        <state relative-caret-position="254">
+          <caret line="211" column="35" selection-start-line="211" selection-start-column="35" selection-end-line="211" selection-end-column="35" />
           <folding>
             <element signature="e#0#22#0" expanded="true" />
           </folding>

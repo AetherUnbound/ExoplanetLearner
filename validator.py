@@ -7,13 +7,19 @@ from mpl_toolkits.mplot3d import axes3d, Axes3D
 from matplotlib import cm
 from time import strftime
 import json
+import glob
+import os
 
 # Variable declaration space
 # External login reference
 execfile("../Login/login.py")
 
-# Parameter vector
-# theta = [1, 2, -0.025]
+# Re-importing parameterization from most recent file
+newest = max(glob.iglob('BoundValues\*.txt'), key=os.path.getctime)
+tFile = open(newest, "r")
+print(newest)
+param = json.load(tFile)
+print(param)
 theta = [6, 1, 1, 1]
 c = []
 x = []
@@ -34,11 +40,6 @@ def prep(rows):
         y.append(rows[i][2])
         x.append(rows[i][3])
         c.append(rows[i][4])
-        # divide temperature values by a suitable number
-        # in order for the algorithm to converge
-        rows[i][2] /= 100
-        rows[i][3] /= 10
-
     return rows
 
 
@@ -71,56 +72,6 @@ def logit(val):
         toreturn = 1 / (1 + math.exp(-val))
         return 0.999999999999 if toreturn == 1 else toreturn
         #### NEED THIS TO BE JUST LESS THAN ONE
-
-
-# Cost Function
-#   Determines a cost for the current values of theta
-#   Range: 0 < x < inf
-def J(rows):
-    sum = 0
-    length = len(rows)
-    for i in range(0, length):
-        x = h(rows[i])
-        y = rows[i][len(rows[i]) - 1]  # after inserting x0=1
-        try:
-            if (y == 1):  # essentially y(i) * log(h(x(i)))
-                sum += math.log(x)
-            else:  # (1-y(i)) * log(1-h(x(i)))
-                sum += math.log(1 - x)
-        except ValueError:  # incase it throws a -inf error
-            print("ERROR ROWS: {} \t ERROR THETA: {}".format(rows[i], theta))
-            h(rows[i])
-            break
-    # needs to be two separate operations in order to
-    # return a valid number
-    sum = sum * -1
-    sum = sum / length
-    return sum
-
-
-# Derivative of Cost Function
-#   Determines the derivative for the cost function
-#   This is used in the gradient descent tuning
-def delJ(rows, param):
-    sum = 0
-    length = len(rows)
-    for i in range(0, length):
-        x = rows[i]
-        y = rows[i][len(x) - 1]  # after inserting x0=1
-        sum += (h(x) - y) * x[param]
-    sum = float(sum) / length
-    return sum
-
-
-# Theta Iteration
-#   Update each theta value
-def newTheta(rows, learnRate, numParams):
-    global theta
-    tmpTheta = [0, 0, 0, 0]
-    for i in range(0, numParams):
-        tmpTheta[i] = theta[i] - (learnRate * delJ(rows, i))
-    theta = tmpTheta
-
 
 # Decision Boundary
 #   Determines the linear equation for the decision boundary
@@ -179,41 +130,36 @@ def graph(bounds):
 
 
 # SQL queries and modifications
-cnx = mysql.connector.connect(**config)
-cursor = cnx.cursor()
-
-query = ("SELECT kpmag, teff, dist, classif FROM testingdata") # WHERE testID IN ('1', '2', '3', '200', '201')")
-#query = ("SELECT kpmag, teff, dist, classif FROM minitest WHERE testID IN ('1', '2', '3', '40', '41')")
-cursor.execute(query)
-rows = cursor.fetchall()
-rows = prep(rows)
-bounds = []
-print(rows)
-# print(rows[1][2])
-print("Hypothesis value for row 1: {}".format(h(rows[1])))
-# print("Total cost value: {}".format(J(rows)))
-for i in range(0, 1000):
-    print("Current Theta: {}".format(theta))
-    cost = J(rows)
-    print("Current cost:  {} -- {} ".format(i, cost))
-    # print("{},{}".format(i, cost))
-    newTheta(rows, 0.01, 4)  # for 600,0,0 theta
-    # newTheta(rows, 0.0021, 3) #for 0-> theta
-    # newTheta(rows, 0.001, 4)
-    if ((i % 15) == 1 and (i > 900)):
-        bounds.append(decBound())
-    if (cost == 0):
-        break
-print("Final theta {}".format(theta))
-#this next portion writes the theta value to a time-sensitive file
-fTime = strftime(" %Y-%m-%d %H.%M.%S")
-file = open("BoundValues\\trial" + fTime + ".txt", "w")
-theta.insert(0,4) #insert number of parameters
-json.dump(theta + decBound(), file)
-graph(bounds)
-# for (no, dist, mag, teff, classif) in rows:
-#    print("Distance: {}  \t Magnitude: {}  \t TEff: {} \t Class: {} ".format(dist, mag, teff, classif))
-
-file.close()
-cursor.close()
-cnx.close()
+# cnx = mysql.connector.connect(**config)
+# cursor = cnx.cursor()
+#
+# query = ("SELECT kpmag, teff, dist, classif FROM testingdata") # WHERE testID IN ('1', '2', '3', '200', '201')")
+# #query = ("SELECT kpmag, teff, dist, classif FROM minitest WHERE testID IN ('1', '2', '3', '40', '41')")
+# cursor.execute(query)
+# rows = cursor.fetchall()
+# rows = prep(rows)
+# bounds = []
+# print(rows)
+# # print(rows[1][2])
+# print("Hypothesis value for row 1: {}".format(h(rows[1])))
+# # print("Total cost value: {}".format(J(rows)))
+# for i in range(0, 1000):
+#     print("Current Theta: {}".format(theta))
+#     cost = J(rows)
+#     print("Current cost:  {} -- {} ".format(i, cost))
+#     # print("{},{}".format(i, cost))
+#     newTheta(rows, 0.01, 4)  # for 600,0,0 theta
+#     # newTheta(rows, 0.0021, 3) #for 0-> theta
+#     # newTheta(rows, 0.001, 4)
+#     if ((i % 15) == 1 and (i > 900)):
+#         bounds.append(decBound())
+#     if (cost == 0):
+#         break
+# print("Final theta {}".format(theta))
+# graph(bounds)
+# # for (no, dist, mag, teff, classif) in rows:
+# #    print("Distance: {}  \t Magnitude: {}  \t TEff: {} \t Class: {} ".format(dist, mag, teff, classif))
+#
+#
+# cursor.close()
+# cnx.close()
