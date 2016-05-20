@@ -15,12 +15,17 @@ import os
 execfile("../Login/login.py")
 
 # Re-importing parameterization from most recent file
-newest = max(glob.iglob('BoundValues\*.txt'), key=os.path.getctime)
+newest = max(glob.iglob('BoundValues\\trial*.txt'), key=os.path.getctime)
 tFile = open(newest, "r")
 print(newest)
 param = json.load(tFile)
 print(param)
-theta = [6, 1, 1, 1]
+numParam = param[0] + 1
+theta = param[1:(numParam)]
+print(theta)
+tFile.close()
+#boundary = param[numParam:]
+#print(boundary)
 c = []
 x = []
 y = []
@@ -40,6 +45,8 @@ def prep(rows):
         y.append(rows[i][2])
         x.append(rows[i][3])
         c.append(rows[i][4])
+        rows[i][2] /= 100
+        rows[i][3] /= 10
     return rows
 
 
@@ -84,10 +91,9 @@ def decBound():
     d = -(theta[0] / theta[1])
     a = -(theta[3] / (10 * theta[1]))
     b = -theta[2] / (100 * theta[1])
-    print("z = {} + {}x + {}y".format(d, a, b))
+    #print("z = {} + {}x + {}y".format(d, a, b))
     plane = [d, a, b]
     return plane
-
 
 # Graphing function
 #   Graphs the data points and calculated decision boundary
@@ -110,56 +116,56 @@ def graph(bounds):
     cvar = np.asarray(c)
     # Plane set up
     xx, yy = np.meshgrid(np.arange(0, 1000, 10), np.arange(3000, 10000, 100))
-    for i in range(0, len(bounds)):
-        plane = bounds[i]
-        # z = d + ax + by
-        zz = plane[0] + plane[1] * xx + plane[2] * yy
-        zz[zz > 25] = np.nan
-        #zz[zz < -1000] = np.nan
-        #for i in range(len(xx)):
-        #    for j in range(len(yy)):
-        #        if (zz[j, i] < -1000) or (zz[j, i] > 1000):
-        #            zz[j, i] = float('nan')
+    plane = bounds
+    # z = d + ax + by
+    zz = plane[0] + plane[1] * xx + plane[2] * yy
+    #zz[zz > 25] = np.nan
 
-        ax.plot_surface(xx, yy, zz, color='black', alpha=0.05)
+    ax.plot_surface(xx, yy, zz, color='black', alpha=0.25)
 
     # scatter 3D with colormap
     ax.scatter(xvar, yvar, zvar, c=cvar, marker='o', cmap=cm.jet)  # 20, zvar, 'o', cmap = cm.jet)
 
     plt.show()
 
+# Classification assessment function
+#   This will give true if the diving boundary correctly
+#   classified a data point and false if it did not.
+def isRightClass(hyp, act):
+    if((act == 1 and hyp < 0.5) or (act ==0 and hyp > 0.5)):
+        #False negative or false positive
+        return False
+    return True
 
 # SQL queries and modifications
-# cnx = mysql.connector.connect(**config)
-# cursor = cnx.cursor()
-#
-# query = ("SELECT kpmag, teff, dist, classif FROM testingdata") # WHERE testID IN ('1', '2', '3', '200', '201')")
-# #query = ("SELECT kpmag, teff, dist, classif FROM minitest WHERE testID IN ('1', '2', '3', '40', '41')")
-# cursor.execute(query)
-# rows = cursor.fetchall()
-# rows = prep(rows)
-# bounds = []
-# print(rows)
-# # print(rows[1][2])
-# print("Hypothesis value for row 1: {}".format(h(rows[1])))
-# # print("Total cost value: {}".format(J(rows)))
-# for i in range(0, 1000):
-#     print("Current Theta: {}".format(theta))
-#     cost = J(rows)
-#     print("Current cost:  {} -- {} ".format(i, cost))
-#     # print("{},{}".format(i, cost))
-#     newTheta(rows, 0.01, 4)  # for 600,0,0 theta
-#     # newTheta(rows, 0.0021, 3) #for 0-> theta
-#     # newTheta(rows, 0.001, 4)
-#     if ((i % 15) == 1 and (i > 900)):
-#         bounds.append(decBound())
-#     if (cost == 0):
-#         break
-# print("Final theta {}".format(theta))
-# graph(bounds)
-# # for (no, dist, mag, teff, classif) in rows:
-# #    print("Distance: {}  \t Magnitude: {}  \t TEff: {} \t Class: {} ".format(dist, mag, teff, classif))
-#
-#
-# cursor.close()
-# cnx.close()
+cnx = mysql.connector.connect(**config)
+cursor = cnx.cursor()
+query = ("SELECT kpmag, teff, dist, classif FROM testingdata") # WHERE testID IN ('1', '2', '3', '200', '201')")
+#query = ("SELECT kpmag, teff, dist, classif FROM minitest WHERE testID IN ('1', '2', '3', '40', '41')")
+cursor.execute(query)
+rows = cursor.fetchall()
+rows = prep(rows)
+print(rows)
+# print(rows[1][2])
+print("Hypothesis value for row 1: {}".format(h(rows[1])))
+count = 0
+numData = len(rows)
+for i in range(0, len(rows)):
+    currRow = rows[i]
+    currHyp = h(currRow)
+    truth = isRightClass(currHyp, currRow[-1])
+    if(not truth):
+        count += 1
+    print("RowID: {}  RowVal: {}  HVal: {}  RightClass: {}".format(i, currRow, currHyp, truth))
+
+percentage = (float(numData - count) / numData) * 100
+print("Number incorrectly classified: {}/{}".format(count, numData))
+print("Percentage correct: {}%".format(percentage))
+tFile = open('BoundValues\\result ' + str(theta) + ".txt", "w")
+tFile.write(str(theta) + '\n' + str(count) + "\n" + str(numData) + '\n' + str(percentage))
+#jList = [count, numData, percentage]
+#json.dump(jList, tFile)
+graph(decBound())
+
+cursor.close()
+cnx.close()

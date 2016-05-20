@@ -14,7 +14,8 @@ execfile("../Login/login.py")
 
 # Parameter vector
 # theta = [1, 2, -0.025]
-theta = [6, 1, 1, 1]
+theta = [4, 100, 10, 1]
+#theta = [100, 100, 100, 100]
 c = []
 x = []
 y = []
@@ -164,6 +165,7 @@ def graph(bounds):
         # z = d + ax + by
         zz = plane[0] + plane[1] * xx + plane[2] * yy
         zz[zz > 25] = np.nan
+        zz[zz < -10] = np.nan
         #zz[zz < -1000] = np.nan
         #for i in range(len(xx)):
         #    for j in range(len(yy)):
@@ -200,7 +202,7 @@ for i in range(0, 1000):
     newTheta(rows, 0.01, 4)  # for 600,0,0 theta
     # newTheta(rows, 0.0021, 3) #for 0-> theta
     # newTheta(rows, 0.001, 4)
-    if ((i % 15) == 1 and (i > 900)):
+    if ((i % 25) == 1 and (i > 900)):
         bounds.append(decBound())
     if (cost == 0):
         break
@@ -209,7 +211,7 @@ print("Final theta {}".format(theta))
 fTime = strftime(" %Y-%m-%d %H.%M.%S")
 file = open("BoundValues\\trial" + fTime + ".txt", "w")
 theta.insert(0,4) #insert number of parameters
-json.dump(theta + decBound(), file)
+json.dump(theta, file)
 graph(bounds)
 # for (no, dist, mag, teff, classif) in rows:
 #    print("Distance: {}  \t Magnitude: {}  \t TEff: {} \t Class: {} ".format(dist, mag, teff, classif))
