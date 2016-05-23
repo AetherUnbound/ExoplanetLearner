@@ -23,14 +23,22 @@ z = []
 #Preparation function
 #   Adds 1 to x_0 value for intercept calculations
 def prep(rows):
-    for i in range(0, len(rows)):
+    i = 0
+    while (i < len(rows)):
         rows[i] = list(rows[i])
         rows[i].insert(0, 1)
-        x.append(rows[i][1])
-        y.append(rows[i][2])
-        z.append(rows[i][3])
-        rows[i][2] /= 100
-        #no idea if this will change anything
+        if(rows[i][4] == 0): #region 0
+            x.append(rows[i][1])
+            y.append(rows[i][2])
+            z.append(rows[i][3])
+            rows[i][2] /= 100
+            rows[i].pop(4) #remove region for length dependent functions later in code
+            i += 1 #increment only if in region 0
+        else: #region 0
+            rows.pop(i)
+
+        #should theoretically only do logit on region 0 data points
+
     return rows
 
 #Hypothesis function
@@ -43,8 +51,8 @@ def h(x):
     for index, item in enumerate(x):
         #sum of parameter vector times actual value
         if(index < len(x) - 1): #don't want to include classification
-            dumb = theta[index]
-            hyp += (dumb * item)
+            temp = theta[index]
+            hyp += (temp * item)
     hyp = logit(hyp)
     return (hyp)
 
@@ -137,11 +145,11 @@ def graph(bounds):
     zvar = np.asarray(z)
 
     #determines line of best fit
-    m, b = np.polyfit(xvar, yvar, 1)
-    x_line = [min(xvar), max(xvar)]
-    y_line = [m*xx + b for xx in x_line]
-    ax.plot(x_line, y_line, '-')
-    print(str(m) + " " + str(b))
+    #m, b = np.polyfit(xvar, yvar, 1)
+    #x_line = [min(xvar), max(xvar)]
+    #y_line = [m*xx + b for xx in x_line]
+    #ax.plot(x_line, y_line, '-')
+    #print(str(m) + " " + str(b))
     for i in range(0, len(bounds)):
         line = bounds[i]
         lx = [5, 20]
@@ -156,14 +164,13 @@ def graph(bounds):
     ax.scatter(xvar,yvar, 20, zvar, 'o', cmap = cm.jet)
 
     plt.show()
-    return m, b
 
 #SQL queries and modifications
 cnx = mysql.connector.connect(**config)
 cursor = cnx.cursor()
 
 
-query = ("SELECT kpmag, teff, classif, FROM trainingset2d") # WHERE testID IN ('1', '2', '3', '200', '201')")
+query = ("SELECT kpmag, teff, classif, region FROM trainingset2d") # WHERE testID IN ('1', '2', '3', '200', '201')")
 #query = ("SELECT dist, kpmag, teff, classif FROM minitest WHERE testID IN ('1', '2', '3', '40', '41')")
 cursor.execute(query)
 rows = cursor.fetchall()
@@ -173,7 +180,7 @@ print(rows)
 #print(rows[1][2])
 print("Hypothesis value for row 1: {}".format(h(rows[1])))
 #print("Total cost value: {}".format(J(rows)))
-for i in range (0, 500):
+for i in range (0, 1000):
     #print("Current Theta: {}".format(theta))
     cost = J(rows)
     #print("Current cost:  {} -- {} ".format(i, cost))
@@ -181,12 +188,12 @@ for i in range (0, 500):
     newTheta(rows, 0.01, 3) #for 600,0,0 theta
     #newTheta(rows, 0.0021, 3) #for 0-> theta
     #newTheta(rows, 0.001, 4)
-    if(i > 600):
+    if(i > 900):
         bounds.append(decBound())
     if(cost == 0):
         break
 print("Final theta {}".format(theta))
-m, b = graph(bounds)
+graph(bounds)
 
 
 

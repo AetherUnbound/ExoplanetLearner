@@ -1,13 +1,7 @@
 import mysql.connector
 
 #Variable declaration space
-config = {
-    'user': 'bowdenm',
-    'password': 'dinglebrumbus',
-    'host': 'cs.spu.edu',
-    'database': 'bowdenm_exoplanet',
-    'raise_on_warnings': True
-}
+execfile("../Login/login.py")
 
 classDict = {
     'M' : {'base':  2400, 'range':  1300},
