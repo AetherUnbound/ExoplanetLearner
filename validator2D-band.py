@@ -15,22 +15,17 @@ import os
 execfile("../Login/login.py")
 
 # Re-importing parameterization from most recent file
-newest = max(glob.iglob('BoundValues\\trial*.txt'), key=os.path.getctime)
-tFile = open(newest, "r")
-print(newest)
-param = json.load(tFile)
-print(param)
-numParam = param[0] + 1
-theta = param[1:(numParam)]
-print(theta)
-tFile.close()
+theta = [0,0,0]
 #boundary = param[numParam:]
 #print(boundary)
 c = []
 x = []
 y = []
 z = []
-
+m1 = -84.8089995193
+b1 = 5964.5755606
+m2 = -45.5079023429
+b2 = 6425.79324464
 
 ##Function declaration##
 
@@ -40,31 +35,28 @@ def prep(rows):
     for i in range(0, len(rows)):
         rows[i] = list(rows[i])
         rows[i].insert(0, 1)
-        # adds each data value to an array for graphing later
-        z.append(rows[i][1])
+        x.append(rows[i][1])
         y.append(rows[i][2])
-        x.append(rows[i][3])
-        c.append(rows[i][4])
+        z.append(rows[i][3])
         rows[i][2] /= 100
-        rows[i][3] /= 10
+        #no idea if this will change anything
     return rows
 
 
 # Hypothesis function
-#   Takes a specific instance and calculates
-#   the 'hypothesis value' for it
-#   Range: -inf < x < inf
+#   Since we have 2 lines for the 2D data set, this
+#   hypothesis function will determine class solely
+#   based of a points position within or without the
+#   two boundary lines
 def h(x):
-    global theta
-    hyp = 0
-    for index, item in enumerate(x):
-        # sum of parameter vector times actual value
-        if (index < len(x) - 1):  # don't want to include classification
-            dumb = theta[index]
-            hyp += (dumb * item)
-    hyp = logit(hyp)
-    return (hyp)
-
+    global m1, b1, m2, b2
+    teff = x[2] * 100
+    mag = x[1]
+    if((teff > (m1 * mag) + b1)
+    and (teff < (m2 * mag) + b2)):
+        return 0.75
+    else: #outside region
+        return 0.25
 
 # Logit Function
 #   This function gives a probability value based off
@@ -80,51 +72,56 @@ def logit(val):
         return 0.999999999999 if toreturn == 1 else toreturn
         #### NEED THIS TO BE JUST LESS THAN ONE
 
-# Decision Boundary
+#Decision Boundary
 #   Determines the linear equation for the decision boundary
-#   For a plane, this involves the following equation:
-#   ax + by + cz + d = 0
-#   But here, that equation will be:
-#   z = d + ax + by (c will be inherent in those values)
 def decBound():
     global theta
-    d = -(theta[0] / theta[1])
-    a = -(theta[3] / (10 * theta[1]))
-    b = -theta[2] / (100 * theta[1])
-    #print("z = {} + {}x + {}y".format(d, a, b))
-    plane = [d, a, b]
-    return plane
+    m = -((100 * theta[1])/theta[2])
+    b = -((100 * theta[0])/theta[2])
+    #m = -((theta[1])/theta[2])
+    #b = -((theta[0])/theta[2])
+    print("y = {}x + {}".format(m, b))
+    line = [m, b]
+    return line
 
 # Graphing function
 #   Graphs the data points and calculated decision boundary
-def graph(bounds):
-    fig = plt.figure(figsize=(8, 8))
-    ax = Axes3D(fig)
-    # Plot options
+def graph():
+    global x, y, m1, b1, m2, b2
+    fig = plt.figure(figsize=(8,8))
+    ax = fig.add_subplot(111)
+    #ax = fig.gca(projection = '3d')
     plt.hold(True)
-    ax.set_title("Mag vs TEff vs Distance", fontsize=14)
-    ax.set_zlabel("Mag", fontsize=12)
-    ax.set_ylabel("TEff", fontsize=12)
-    ax.set_xlabel("Distance", fontsize=12)
-    ax.set_ylim(3000, 25000)
-    ax.set_zlim(-5,20)
-    ax.grid(True, linestyle='-', color='0.75')
-    # Setting scatter plot variables up
+    ax.set_title("Mag vs TEff",fontsize=14)
+    ax.set_xlabel("Mag",fontsize=12)
+    ax.set_ylabel("TEff",fontsize=12)
+    ax.grid(True,linestyle='-',color='0.75')
     xvar = np.asarray(x)
     yvar = np.asarray(y)
     zvar = np.asarray(z)
-    cvar = np.asarray(c)
-    # Plane set up
-    xx, yy = np.meshgrid(np.arange(0, 1000, 10), np.arange(3000, 10000, 100))
-    plane = bounds
-    # z = d + ax + by
-    zz = plane[0] + plane[1] * xx + plane[2] * yy
-    #zz[zz > 25] = np.nan
 
-    ax.plot_surface(xx, yy, zz, color='black', alpha=0.25)
+    #determines line of best fit
+    #m, b = np.polyfit(xvar, yvar, 1)
+    #x_line = [min(xvar), max(xvar)]
+    #y_line = [m*xx + b for xx in x_line]
+    #ax.plot(x_line, y_line, '-')
+    #print(str(m) + " " + str(b))
 
-    # scatter 3D with colormap
-    ax.scatter(xvar, yvar, zvar, c=cvar, marker='o', cmap=cm.jet)  # 20, zvar, 'o', cmap = cm.jet)
+    line1x = [5, 20]
+    line1y = []
+    for index, item in enumerate(line1x):
+        line1y.append(m1*item + b1)
+    line2x = [5, 20]
+    line2y = []
+    for index, item in enumerate(line2x):
+        line2y.append(m2 * item + b2)
+    ax.plot(line1x,line1y, 'k-')
+    ax.plot(line2x,line2y, 'k-')
+    # scatter with colormap mapping to z value
+    #ax.scatter(x1,y1,s=20,c=z, marker = 'o', cmap = cm.jet );
+
+    # scatter with colormap mapping to z value
+    ax.scatter(xvar,yvar, 20, zvar, 'o', cmap = cm.jet)
 
     plt.show()
 
@@ -140,7 +137,7 @@ def isRightClass(hyp, act):
 # SQL queries and modifications
 cnx = mysql.connector.connect(**config)
 cursor = cnx.cursor()
-query = ("SELECT kpmag, teff, dist, classif FROM validate3d")
+query = ("SELECT kpmag, teff, classif FROM validate2d")
 cursor.execute(query)
 rows = cursor.fetchall()
 rows = prep(rows)
@@ -148,6 +145,8 @@ print(rows)
 # print(rows[1][2])
 print("Hypothesis value for row 1: {}".format(h(rows[1])))
 count = 0
+exoWrong = 0
+totExo = 200 #from data set
 numData = len(rows)
 for i in range(0, len(rows)):
     currRow = rows[i]
@@ -155,16 +154,23 @@ for i in range(0, len(rows)):
     truth = isRightClass(currHyp, currRow[-1])
     if(not truth):
         count += 1
+        if(currRow[-1] == 1): #is an exoplanet
+            exoWrong += 1
     print("RowID: {}  RowVal: {}  HVal: {}  RightClass: {}".format(i, currRow, currHyp, truth))
 
 percentage = (float(numData - count) / numData) * 100
+exoPerc = (float(totExo - exoWrong) / totExo) * 100
+print("==TOTAL DATA==")
 print("Number incorrectly classified: {}/{}".format(count, numData))
 print("Percentage correct: {}%".format(percentage))
+print("==EXOPLANET ONLY==")
+print("Number incorrectly classified: {}/{}".format(exoWrong, totExo))
+print("Percentage correct: {}%".format(exoPerc))
 tFile = open('BoundValues\\result ' + str(theta) + ".txt", "w")
 tFile.write(str(theta) + '\n' + str(count) + "\n" + str(numData) + '\n' + str(percentage))
 #jList = [count, numData, percentage]
 #json.dump(jList, tFile)
-graph(decBound())
+graph()
 
 cursor.close()
 cnx.close()

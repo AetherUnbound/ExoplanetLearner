@@ -15,17 +15,13 @@ import os
 execfile("../Login/login.py")
 
 # Re-importing parameterization from most recent file
-theta = [0,0,0]
+theta = [599.644, -5.0777, -10.1916]
 #boundary = param[numParam:]
 #print(boundary)
 c = []
 x = []
 y = []
 z = []
-m1 = -84.8089995193
-b1 = 5964.5755606
-m2 = -45.5079023429
-b2 = 6425.79324464
 
 ##Function declaration##
 
@@ -49,14 +45,15 @@ def prep(rows):
 #   based of a points position within or without the
 #   two boundary lines
 def h(x):
-    global m1, b1, m2, b2
-    teff = x[2] * 100
-    mag = x[1]
-    if((teff > (m1 * mag) + b1)
-    and (teff < (m2 * mag) + b2)):
-        return 0.75
-    else: #outside region
-        return 0.25
+    global theta
+    hyp = 0
+    for index, item in enumerate(x):
+        #sum of parameter vector times actual value
+        if(index < len(x) - 1): #don't want to include classification
+            temp = theta[index]
+            hyp += (temp * item)
+    hyp = logit(hyp)
+    return (hyp)
 
 # Logit Function
 #   This function gives a probability value based off
@@ -86,8 +83,8 @@ def decBound():
 
 # Graphing function
 #   Graphs the data points and calculated decision boundary
-def graph():
-    global x, y, m1, b1, m2, b2
+def graph(line):
+    global x, y, z, c
     fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(111)
     #ax = fig.gca(projection = '3d')
@@ -100,23 +97,11 @@ def graph():
     yvar = np.asarray(y)
     zvar = np.asarray(z)
 
-    #determines line of best fit
-    #m, b = np.polyfit(xvar, yvar, 1)
-    #x_line = [min(xvar), max(xvar)]
-    #y_line = [m*xx + b for xx in x_line]
-    #ax.plot(x_line, y_line, '-')
-    #print(str(m) + " " + str(b))
-
     line1x = [5, 20]
     line1y = []
     for index, item in enumerate(line1x):
-        line1y.append(m1*item + b1)
-    line2x = [5, 20]
-    line2y = []
-    for index, item in enumerate(line2x):
-        line2y.append(m2 * item + b2)
+        line1y.append(line[0]*item + line[1])
     ax.plot(line1x,line1y, 'k-')
-    ax.plot(line2x,line2y, 'k-')
     # scatter with colormap mapping to z value
     #ax.scatter(x1,y1,s=20,c=z, marker = 'o', cmap = cm.jet );
 
@@ -137,8 +122,7 @@ def isRightClass(hyp, act):
 # SQL queries and modifications
 cnx = mysql.connector.connect(**config)
 cursor = cnx.cursor()
-query = ("SELECT kpmag, teff, classif FROM trainingset2d") # WHERE testID IN ('1', '2', '3', '200', '201')")
-#query = ("SELECT kpmag, teff, dist, classif FROM minitest WHERE testID IN ('1', '2', '3', '40', '41')")
+query = ("SELECT kpmag, teff, classif FROM validate2d")
 cursor.execute(query)
 rows = cursor.fetchall()
 rows = prep(rows)
@@ -146,6 +130,8 @@ print(rows)
 # print(rows[1][2])
 print("Hypothesis value for row 1: {}".format(h(rows[1])))
 count = 0
+exoWrong = 0
+totExo = 200 #from data set
 numData = len(rows)
 for i in range(0, len(rows)):
     currRow = rows[i]
@@ -153,16 +139,23 @@ for i in range(0, len(rows)):
     truth = isRightClass(currHyp, currRow[-1])
     if(not truth):
         count += 1
+        if(currRow[-1] == 1): #is an exoplanet
+            exoWrong += 1
     print("RowID: {}  RowVal: {}  HVal: {}  RightClass: {}".format(i, currRow, currHyp, truth))
 
 percentage = (float(numData - count) / numData) * 100
+exoPerc = (float(totExo - exoWrong) / totExo) * 100
+print("==TOTAL DATA==")
 print("Number incorrectly classified: {}/{}".format(count, numData))
 print("Percentage correct: {}%".format(percentage))
+print("==EXOPLANET ONLY==")
+print("Number incorrectly classified: {}/{}".format(exoWrong, totExo))
+print("Percentage correct: {}%".format(exoPerc))
 tFile = open('BoundValues\\result ' + str(theta) + ".txt", "w")
 tFile.write(str(theta) + '\n' + str(count) + "\n" + str(numData) + '\n' + str(percentage))
 #jList = [count, numData, percentage]
 #json.dump(jList, tFile)
-graph()
+graph(decBound())
 
 cursor.close()
 cnx.close()

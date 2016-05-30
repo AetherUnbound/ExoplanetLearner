@@ -163,7 +163,7 @@ cnx = mysql.connector.connect(**config)
 cursor = cnx.cursor()
 
 
-query = ("SELECT kpmag, teff, classif, FROM trainingset2d") # WHERE testID IN ('1', '2', '3', '200', '201')")
+query = ("SELECT kpmag, teff, classif FROM trainingset2d") # WHERE testID IN ('1', '2', '3', '200', '201')")
 #query = ("SELECT dist, kpmag, teff, classif FROM minitest WHERE testID IN ('1', '2', '3', '40', '41')")
 cursor.execute(query)
 rows = cursor.fetchall()
@@ -181,7 +181,7 @@ for i in range (0, 500):
     newTheta(rows, 0.01, 3) #for 600,0,0 theta
     #newTheta(rows, 0.0021, 3) #for 0-> theta
     #newTheta(rows, 0.001, 4)
-    if(i > 600):
+    if(i > 480):
         bounds.append(decBound())
     if(cost == 0):
         break
