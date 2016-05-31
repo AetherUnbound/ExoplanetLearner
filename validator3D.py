@@ -148,6 +148,8 @@ print(rows)
 # print(rows[1][2])
 print("Hypothesis value for row 1: {}".format(h(rows[1])))
 count = 0
+exoWrong = 0
+totExo = 100 #from data set
 numData = len(rows)
 for i in range(0, len(rows)):
     currRow = rows[i]
@@ -155,11 +157,18 @@ for i in range(0, len(rows)):
     truth = isRightClass(currHyp, currRow[-1])
     if(not truth):
         count += 1
+        if(currRow[-1] == 1): #is an exoplanet
+            exoWrong += 1
     print("RowID: {}  RowVal: {}  HVal: {}  RightClass: {}".format(i, currRow, currHyp, truth))
 
 percentage = (float(numData - count) / numData) * 100
+exoPerc = (float(totExo - exoWrong) / totExo) * 100
+print("==TOTAL DATA==")
 print("Number incorrectly classified: {}/{}".format(count, numData))
 print("Percentage correct: {}%".format(percentage))
+print("==EXOPLANET ONLY==")
+print("Number incorrectly classified: {}/{}".format(exoWrong, totExo))
+print("Percentage correct: {}%".format(exoPerc))
 tFile = open('BoundValues\\result ' + str(theta) + ".txt", "w")
 tFile.write(str(theta) + '\n' + str(count) + "\n" + str(numData) + '\n' + str(percentage))
 #jList = [count, numData, percentage]

@@ -38,15 +38,13 @@ z = []
 #   Adds 1 to x_0 value for intercept calculations
 def prep(rows):
     for i in range(0, len(rows)):
-        rows[i] = list(rows[i])
-        rows[i].insert(0, 1)
         # adds each data value to an array for graphing later
         z.append(rows[i][1])
-        y.append(rows[i][2])
-        x.append(rows[i][3])
-        c.append(rows[i][4])
-        rows[i][2] /= 100
-        rows[i][3] /= 10
+        y.append(rows[i][2] * 100)
+        x.append(rows[i][3] * 10)
+        c.append(rows[i][5])
+        #rows[i][2] /= 100
+        #rows[i][3] /= 10
     return rows
 
 
@@ -60,8 +58,8 @@ def h(x):
     for index, item in enumerate(x):
         # sum of parameter vector times actual value
         if (index < len(x) - 1):  # don't want to include classification
-            dumb = theta[index]
-            hyp += (dumb * item)
+            tmpT = theta[index]
+            hyp += (tmpT * item)
     hyp = logit(hyp)
     return (hyp)
 
@@ -128,42 +126,42 @@ def graph(bounds):
 
     plt.show()
 
-# Classification assessment function
-#   This will give true if the diving boundary correctly
-#   classified a data point and false if it did not.
-def isRightClass(hyp, act):
-    if((act == 1 and hyp < 0.5) or (act ==0 and hyp > 0.5)):
-        #False negative or false positive
-        return False
-    return True
+#Assigning function
+#   This function will assign a classification value based on the
+#   calculated hypothesis value for the data point
+def assign(hyp):
+    if(hyp >= 0.5):
+        return 1
+    else: #hyp < 0.5
+        return 0
 
 # SQL queries and modifications
 cnx = mysql.connector.connect(**config)
 cursor = cnx.cursor()
-query = ("SELECT kpmag, teff, dist, classif FROM validate3d")
-cursor.execute(query)
-rows = cursor.fetchall()
-rows = prep(rows)
-print(rows)
-# print(rows[1][2])
-print("Hypothesis value for row 1: {}".format(h(rows[1])))
+updateCursor = cnx.cursor()
+rows = []
 count = 0
-numData = len(rows)
-for i in range(0, len(rows)):
-    currRow = rows[i]
-    currHyp = h(currRow)
-    truth = isRightClass(currHyp, currRow[-1])
-    if(not truth):
-        count += 1
-    print("RowID: {}  RowVal: {}  HVal: {}  RightClass: {}".format(i, currRow, currHyp, truth))
-
-percentage = (float(numData - count) / numData) * 100
-print("Number incorrectly classified: {}/{}".format(count, numData))
-print("Percentage correct: {}%".format(percentage))
-tFile = open('BoundValues\\result ' + str(theta) + ".txt", "w")
-tFile.write(str(theta) + '\n' + str(count) + "\n" + str(numData) + '\n' + str(percentage))
-#jList = [count, numData, percentage]
-#json.dump(jList, tFile)
+i = 0
+for j in range(0, 150):
+    #if(i > 500):
+    #    break #testing purposes only
+    query = ("SELECT id, kpmag, teff, dist FROM hip_assigned WHERE id='%i'" % int(j))
+    cursor.execute(query)
+    if(cursor.rowcount != 0): #if there actually exists such a row
+        #i +=1
+        row = cursor.fetchall()
+        for (id, kepmag, teff, dist) in row:
+            currRow = [1, kepmag, (teff/100), (dist/10), id]
+            #dividing no longer occurs in preparing rows
+            currHyp = h(currRow)
+            classif = assign(currHyp)
+            currRow.append(classif)
+            rows.append(currRow)
+            updateQuery = "UPDATE hip_assigned SET classif = %i WHERE id = '%i'" % (classif, currRow[4])
+            print("RowID: {}  RowVal: {}  HVal: {}  Classification: {}".format(j, currRow, currHyp, classif))
+            updateCursor.execute(updateQuery)
+            cnx.commit()  # for committing changes made
+prep(rows)
 graph(decBound())
 
 cursor.close()
