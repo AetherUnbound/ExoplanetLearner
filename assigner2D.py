@@ -140,7 +140,7 @@ rows = []
 #numData = len(rows)
 i = 0
 #currently at 198
-for j in range(1, 573076):
+for j in range(2470, 5001):
     #if(i > 500):
     #    break #testing purposes only
     query = ("SELECT kepid, kepmag, teff FROM kepnoexo WHERE id='%i'" % int(j))
